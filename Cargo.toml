@@ -7,7 +7,8 @@ edition = "2021"
 
 [dependencies]
 clap = { version = "4.0", features = ["derive"] }
-
+crossterm = "0.23"
+dialoguer = "0.10.4"
 [[bin]]
 name = "turbo_open"
 path = "main.rs"

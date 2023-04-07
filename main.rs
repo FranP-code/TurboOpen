@@ -1,13 +1,22 @@
 use clap::Parser;
-use std::process::Command;
+use dialoguer::{console::Term, theme::ColorfulTheme, Select};
+use std::{
+    fs::{self, canonicalize},
+    process::Command,
+};
 
 #[derive(Parser)]
 struct Cli {
-    project_type: String,
     path: std::path::PathBuf,
+    project_type: Option<String>,
 }
 
 fn main() {
+    let docker_files_source = canonicalize("./Dockerfiles/")
+        .expect("could not read file")
+        .into_os_string()
+        .into_string()
+        .unwrap();
     let args = Cli::parse();
     let path = std::fs::canonicalize(args.path)
         .expect("could not read file")
@@ -18,17 +27,38 @@ fn main() {
         ["Dockerfile", "Dockerfile"],
         ["docker-compose.yml", "docker-compose.yml"],
     ];
+    let items = fs::read_dir(docker_files_source.clone())
+        .unwrap()
+        .filter_map(|entry| entry.ok())
+        .filter(|entry| entry.path().is_dir())
+        .map(|entry| {
+            entry
+                .path()
+                .file_name()
+                .unwrap()
+                .to_string_lossy()
+                .into_owned()
+        })
+        .collect::<Vec<_>>();
+    let mut project_type: String = "".to_owned();
+    if args.project_type.is_some() && items.contains(&args.project_type.as_ref().unwrap()) {
+        project_type = args.project_type.as_ref().unwrap().to_string();
+    } else {
+        let selection = Select::with_theme(&ColorfulTheme::default())
+            .items(&items)
+            .default(0)
+            .interact_on_opt(&Term::stderr());
+        match selection {
+            Ok(Some(index)) => {
+                project_type = items[index].clone();
+            }
+            Ok(None) => println!("User did not select anything"),
+            Err(_) => todo!(),
+        }
+    }
     for file_names in file_names_collection {
-        let origin_file_path = format!(
-            "{}/{}/{}",
-            std::fs::canonicalize("./Dockerfiles/")
-                .expect("could not read file")
-                .into_os_string()
-                .into_string()
-                .unwrap(),
-            &args.project_type,
-            file_names[1]
-        );
+        let origin_file_path =
+            format!("{}/{}/{}", docker_files_source, project_type, file_names[1]);
         let destiny_path = format!("{}/{}", path, file_names[1]);
         std::fs::copy(origin_file_path, destiny_path).ok();
     }
