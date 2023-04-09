@@ -1,14 +1,13 @@
 [package]
-name = "turbo_open"
+name = "turborun"
 version = "0.1.0"
 edition = "2021"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
 clap = { version = "4.0", features = ["derive"] }
 crossterm = "0.23"
 dialoguer = "0.10.4"
+
 [[bin]]
-name = "turbo_open"
+name = "turborun"
 path = "main.rs"
