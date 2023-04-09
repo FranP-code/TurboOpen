@@ -45,6 +45,7 @@ fn main() {
         project_type = args.project_type.as_ref().unwrap().to_string();
     } else {
         let selection = Select::with_theme(&ColorfulTheme::default())
+            .with_prompt("What type is your project?")
             .items(&items)
             .default(0)
             .interact_on_opt(&Term::stderr());

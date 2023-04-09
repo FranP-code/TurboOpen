@@ -1,0 +1,9 @@
+version: "2.9"
+
+services:
+   app:
+      build:
+        dockerfile: ./windows_build.Dockerfile
+      volumes:
+        - ../:/usr/src
+        - /usr/src/Project
